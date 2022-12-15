@@ -3,6 +3,7 @@ package com.ecommerce.ara.api.controller.auth;
 import com.ecommerce.ara.api.model.LoginBody;
 import com.ecommerce.ara.api.model.LoginResponse;
 import com.ecommerce.ara.api.model.RegistrationBody;
+import com.ecommerce.ara.domain.LocalUser;
 import com.ecommerce.ara.exception.UserAlreadyExistsException;
 import com.ecommerce.ara.service.UserService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -49,6 +52,12 @@ public class AuthenticationController {
 
             return ResponseEntity.ok(response);
         }
+    }
+
+    @GetMapping("/me")
+    public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
+
+        return user;
     }
 }
 
