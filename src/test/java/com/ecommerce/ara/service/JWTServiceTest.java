@@ -5,9 +5,11 @@ import com.ecommerce.ara.domain.dao.LocalUserDAO;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class JWTServiceTest {
 
     @Autowired
@@ -18,6 +20,7 @@ public class JWTServiceTest {
 
     @Test
     public void testVerificationTokenNotUsableForLogin() {
+
         LocalUser user = localUserDAO.findByUsernameIgnoreCase("UserA").get();
         String token = jwtService.generateVerificationJWT(user);
         Assertions.assertNull(jwtService.getUsername(token), "Verification token should not contain username.");
@@ -25,6 +28,7 @@ public class JWTServiceTest {
 
     @Test
     public void testAuthTokenReturnsUsername() {
+
         LocalUser user = localUserDAO.findByUsernameIgnoreCase("UserA").get();
         String token = jwtService.generateJWT(user);
         Assertions.assertEquals(user.getUsername(), jwtService.getUsername(token), "Token for auth should contain users username.");

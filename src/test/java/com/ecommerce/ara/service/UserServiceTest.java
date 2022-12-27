@@ -17,11 +17,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class UserServiceTest {
 
     @RegisterExtension
@@ -38,6 +40,7 @@ public class UserServiceTest {
     @Test
     @Transactional
     public void testRegisterUser() throws MessagingException {
+
         RegistrationBody body = new RegistrationBody();
         body.setUsername("UserA");
         body.setEmail("UserServiceTest$testRegisterUser@junit.com");
@@ -60,6 +63,7 @@ public class UserServiceTest {
     @Test
     @Transactional
     public void testLoginUser() throws UserNotVerifiedException, EmailFailureException {
+
         LoginBody body = new LoginBody();
         body.setUsername("UserA-NotExists");
         body.setPassword("PasswordA123-BadPassword");
@@ -70,6 +74,7 @@ public class UserServiceTest {
         Assertions.assertNotNull(userService.loginUser(body), "The user should login successfully.");
         body.setUsername("UserB");
         body.setPassword("PasswordB123");
+
         try {
             userService.loginUser(body);
             Assertions.assertTrue(false, "User should not have email verified.");
@@ -89,6 +94,7 @@ public class UserServiceTest {
     @Test
     @Transactional
     public void testVerifyUser() throws EmailFailureException {
+
         Assertions.assertFalse(userService.verifyUser("Bad Token"), "Token that is bad or does not exist should return false.");
         LoginBody body = new LoginBody();
         body.setUsername("UserB");
