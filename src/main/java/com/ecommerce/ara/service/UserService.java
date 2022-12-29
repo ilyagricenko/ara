@@ -1,12 +1,14 @@
 package com.ecommerce.ara.service;
 
 import com.ecommerce.ara.api.model.LoginBody;
+import com.ecommerce.ara.api.model.PasswordResetBody;
 import com.ecommerce.ara.api.model.RegistrationBody;
 import com.ecommerce.ara.domain.LocalUser;
 import com.ecommerce.ara.domain.VerificationToken;
 import com.ecommerce.ara.domain.dao.LocalUserDAO;
 import com.ecommerce.ara.domain.dao.VerificationTokenDAO;
 import com.ecommerce.ara.exception.EmailFailureException;
+import com.ecommerce.ara.exception.EmailNotFoundException;
 import com.ecommerce.ara.exception.UserAlreadyExistsException;
 import com.ecommerce.ara.exception.UserNotVerifiedException;
 import jakarta.transaction.Transactional;
@@ -107,5 +109,26 @@ public class UserService {
         }
 
         return false;
+    }
+
+    public void forgotPassword(String email) throws EmailNotFoundException, EmailFailureException {
+        Optional<LocalUser> opUser = localUserDAO.findByEmailIgnoreCase(email);
+        if (opUser.isPresent()) {
+            LocalUser user = opUser.get();
+            String token = jwtService.generatePasswordResetJWT(user);
+            emailService.sendPasswordResetEmail(user, token);
+        } else {
+            throw new EmailNotFoundException();
+        }
+    }
+
+    public void resetPassword(PasswordResetBody body) {
+        String email = jwtService.getResetPasswordEmail(body.getToken());
+        Optional<LocalUser> opUser = localUserDAO.findByEmailIgnoreCase(email);
+        if (opUser.isPresent()) {
+            LocalUser user = opUser.get();
+            user.setPassword(encryptionService.encryptPassword(body.getPassword()));
+            localUserDAO.save(user);
+        }
     }
 }

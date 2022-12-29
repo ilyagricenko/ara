@@ -2,9 +2,12 @@ package com.ecommerce.ara.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.ecommerce.ara.domain.LocalUser;
+import com.ecommerce.ara.exception.EmailFailureException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -24,7 +27,8 @@ public class JWTService {
     private Algorithm algorithm;
 
     private static final String USERNAME_KEY = "USERNAME";
-    private static final String EMAIL_KEY = "EMAIL";
+    private static final String VERIFICATION_EMAIL_KEY = "VERIFICATION_EMAIL";
+    private static final String RESET_PASSWORD_EMAIL_KEY = "RESET_PASSWORD_EMAIL";
 
     @PostConstruct
     public void postConstruct() {
@@ -43,13 +47,28 @@ public class JWTService {
     public String generateVerificationJWT(LocalUser user) {
 
         return JWT.create()
-                .withClaim(EMAIL_KEY, user.getUsername())
+                .withClaim(VERIFICATION_EMAIL_KEY, user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + (1000 * expiryInSeconds)))
                 .withIssuer(issuer).sign(algorithm);
     }
 
+    public String generatePasswordResetJWT(LocalUser user) {
+
+        return JWT.create()
+                .withClaim(RESET_PASSWORD_EMAIL_KEY, user.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + (1000 * 60 * 30)))
+                .withIssuer(issuer).sign(algorithm);
+    }
+
+    public String getResetPasswordEmail(String token) {
+
+        DecodedJWT jwt = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
+        return jwt.getClaim(RESET_PASSWORD_EMAIL_KEY).asString();
+    }
+
     public String getUsername(String token) {
 
-        return JWT.decode(token).getClaim(USERNAME_KEY).asString();
+        DecodedJWT jwt = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
+        return jwt.getClaim(USERNAME_KEY).asString();
     }
 }
