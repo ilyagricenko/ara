@@ -27,7 +27,9 @@ public class WebSecurityConfig {
                         , "/auth/verify"
                         , "/auth/forgot"
                         , "/auth/reset"
-                        , "/error").permitAll()
+                        , "/error"
+                        , "/websocket"
+                        , "/websocket/**").permitAll()
                 .anyRequest().authenticated();
 
         return http.build();
